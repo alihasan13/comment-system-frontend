@@ -1,0 +1,109 @@
+.comment-form {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+
+  .form-content {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+
+    .user-avatar-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    textarea {
+      flex: 1;
+      padding: 0.875rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+      transition: all 0.2s;
+      line-height: 1.6;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      &:disabled {
+        background-color: var(--background);
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      &::placeholder {
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  .form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-left: calc(40px + 0.75rem);
+
+    .char-count {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .form-content {
+      .user-avatar-small {
+        width: 32px;
+        height: 32px;
+      }
+
+      textarea {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+      }
+    }
+
+    .form-footer {
+      padding-left: calc(32px + 0.75rem);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+}
+
+.comment-form-login {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 2px dashed var(--border-color);
+  box-shadow: var(--shadow);
+
+  p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
