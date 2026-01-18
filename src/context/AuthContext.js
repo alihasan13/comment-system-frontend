@@ -3,6 +3,11 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api'
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,43 +15,36 @@ export const AuthProvider = ({ children }) => {
 
   // Configure axios defaults
   useEffect(() => {
-    const setupAxios = () => {
-      // Set base URL
-      axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      
-      // Set auth token if it exists
-      if (token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        loadUser();
-      } else {
-        setLoading(false);
-      }
-    };
-
-    setupAxios();
+    if (token) {
+      // Set auth token for the axios instance
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Also set for global axios (for backward compatibility)
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      loadUser();
+    } else {
+      setLoading(false);
+    }
   }, [token]);
 
   // Load user data from token
   const loadUser = async () => {
     try {
-      const res = await axios.get('/auth/me');
+      const res = await api.get('/auth/me'); // ✅ Uses base URL
       const userData = res.data.user;
       
-      // Ensure user has both id and _id for compatibility
       const normalizedUser = {
         ...userData,
         id: userData.id || userData._id,
         _id: userData._id || userData.id
       };
       
-      console.log('User loaded:', normalizedUser);
       setUser(normalizedUser);
     } catch (error) {
       console.error('Failed to load user:', error);
-      // If token is invalid, clear it
       localStorage.removeItem('token');
       setToken(null);
       setUser(null);
+      delete api.defaults.headers.common['Authorization'];
       delete axios.defaults.headers.common['Authorization'];
     } finally {
       setLoading(false);
@@ -56,31 +54,26 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
-      const res = await axios.post('/auth/login', {
+      const res = await api.post('/auth/login', { // ✅ Uses base URL
         email,
         password
       });
 
       const { token: newToken, user: userData } = res.data;
 
-      // Normalize user data to have both id and _id
       const normalizedUser = {
         ...userData,
         id: userData.id || userData._id,
         _id: userData._id || userData.id
       };
 
-      // Save token to localStorage
       localStorage.setItem('token', newToken);
-      
-      // Update state
       setToken(newToken);
       setUser(normalizedUser);
       
-      // Set axios default header
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
-      console.log('User logged in:', normalizedUser);
       return res.data;
     } catch (error) {
       console.error('Login error:', error);
@@ -91,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (username, email, password) => {
     try {
-      const res = await axios.post('/auth/register', {
+      const res = await api.post('/auth/register', { // ✅ Uses base URL
         username,
         email,
         password
@@ -99,24 +92,19 @@ export const AuthProvider = ({ children }) => {
 
       const { token: newToken, user: userData } = res.data;
 
-      // Normalize user data to have both id and _id
       const normalizedUser = {
         ...userData,
         id: userData.id || userData._id,
         _id: userData._id || userData.id
       };
 
-      // Save token to localStorage
       localStorage.setItem('token', newToken);
-      
-      // Update state
       setToken(newToken);
       setUser(normalizedUser);
       
-      // Set axios default header
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
-      console.log('User registered:', normalizedUser);
       return res.data;
     } catch (error) {
       console.error('Register error:', error);
@@ -126,18 +114,13 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    // Remove token from localStorage
     localStorage.removeItem('token');
-    
-    // Clear state
     setToken(null);
     setUser(null);
-    
-    // Remove axios default header
+    delete api.defaults.headers.common['Authorization'];
     delete axios.defaults.headers.common['Authorization'];
   };
 
-  // Context value
   const value = {
     user,
     loading,
@@ -154,3 +137,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
